@@ -1,0 +1,13 @@
+npm ini -y
+npm i express
+npm i dotenv
+npm i nodemon -d
+npm i mongoosse
+
+
+npm install mongodb
+
+mongodb+srv://root:<xJOYKWyt9cS2ROCT>@cluster1.ivfd1gj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1
+
+
+

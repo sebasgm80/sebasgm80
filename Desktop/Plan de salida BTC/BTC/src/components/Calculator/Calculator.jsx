@@ -3,7 +3,7 @@ import { useState } from "react";
 
 
 
-export function App() {
+export function CalBtc() {
     // Estados para almacenar los valores de los inputs
     const [walletValue, setWalletValue] = useState(0);
     const [btcIntocableValue, setBtcIntocableValue] = useState(0);
@@ -18,3 +18,4 @@ export function App() {
       setBtcIntocableValue(parseFloat(event.target.value)); // Convertimos el valor a número flotante
     };
 }  
+

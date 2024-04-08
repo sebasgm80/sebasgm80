@@ -1,0 +1,5 @@
+export * from './Home/Home'
+export * from './NotFound/NotFound'
+export * from './About/About'
+export * from './ById/ById'
+export * from './Gallery/Gallery'
