@@ -73,21 +73,21 @@ int OnInit()
    trade.SetExpertMagicNumber(InpMagicNumber);
    trade.SetDeviationInPoints(10);
    
-   //--- Create Custom Indicator Handles
-   // 1. Slow Hull on Daily (D1) timeframe
-   hSlowHull = iCustom(_Symbol, PERIOD_D1, InpIndicatorName, 
+//--- Create Custom Indicator Handles
+   // 1. Slow Hull via HTF: runs on InpExecutionTimeframe, gets D1 Hull values
+   hSlowHull = iCustom(_Symbol, InpExecutionTimeframe, InpIndicatorName, 
                        InpSource,         // Price Source
                        HULL_MODE_HMA,     // Mode Hma
                        InpSlowLength,     // Slow Length (55)
                        1.0,               // Length Mult
-                       false,             // Use HTF (false because we load D1 directly)
-                       PERIOD_H4,         // HTF Timeframe (dummy)
-                       true,              // Switch Color
+                       true,              // Use HTF (enabled - get D1 values on execution chart)
+                       PERIOD_D1,         // HTF Timeframe = D1 (Daily)
+                       false,             // Switch Color (no visual needed)
                        false,             // Candle Color
-                       true,              // Show Band
+                       false,             // Show Band (no visual needed)
                        1                  // Thickness
                        );
-                       
+                        
    // 2. Fast Hull on Execution Timeframe (e.g., H4)
    hFastHull = iCustom(_Symbol, InpExecutionTimeframe, InpIndicatorName, 
                        InpSource,         // Price Source
@@ -261,15 +261,13 @@ void OnTick()
    if(!IsNewBar())
       return;
       
-   //--- 3. Fetch indicators data
-   // Copy D1 Slow Hull (trend filter) - we copy last closed bar (index 1) and bar before it
-   double slow_m[], slow_s[];
-   ArrayResize(slow_m, 2);
-   ArrayResize(slow_s, 2);
+//--- 3. Fetch indicators data
+   // Copy D1 Slow Hull via HTF (Trend Filter) - we get 8 bars of MHULL to compare ~1 D1 day apart
+   double slow_m[];
+   ArrayResize(slow_m, 8);
    ArraySetAsSeries(slow_m, true);
-   ArraySetAsSeries(slow_s, true);
-   
-   if(CopyBuffer(hSlowHull, 0, 0, 2, slow_m) < 2 || CopyBuffer(hSlowHull, 2, 0, 2, slow_s) < 2)
+    
+   if(CopyBuffer(hSlowHull, 0, 0, 8, slow_m) < 8)
    {
       Print("Hull EA: Failed to copy D1 slow indicator data.");
       return;
@@ -300,24 +298,24 @@ void OnTick()
 
    //--- 4. Verify Trend Condition on D1 (Last closed bar 1)
    // Slow Hull is bullish when MHULL > SHULL
-   if(slow_m[1] == EMPTY_VALUE || slow_s[1] == EMPTY_VALUE || 
+   if(slow_m[1] == EMPTY_VALUE || slow_m[7] == EMPTY_VALUE || 
       fast_m[1] == EMPTY_VALUE || fast_s[1] == EMPTY_VALUE || 
       fast_m[2] == EMPTY_VALUE || fast_s[2] == EMPTY_VALUE)
    {
       PrintFormat("Hull EA Error: EMPTY_VALUE detected! D1(%.2f, %.2f) H4_old(%.2f, %.2f) H4_new(%.2f, %.2f)", 
-                  slow_m[1], slow_s[1], fast_m[2], fast_s[2], fast_m[1], fast_s[1]);
+                  slow_m[1], slow_m[7], fast_m[2], fast_s[2], fast_m[1], fast_s[1]);
       return;
    }
    
-   bool d1_trend_bullish = (slow_m[1] > slow_s[1]);
+   bool d1_trend_bullish = (slow_m[1] > slow_m[7]);
    
    //--- 5. Detect H4 Pullback Trigger (Buy-the-Dip)
    bool h4_was_bearish = (fast_m[2] <= fast_s[2]);
    bool h4_is_bullish  = (fast_m[1] > fast_s[1]);
    
    // DEBUG PRINT ON EVERY NEW BAR TO SEE WHAT IS GOING ON
-   PrintFormat("Hull EA NewBar: D1(%.2f, %.2f) H4_old(%.2f, %.2f) H4_new(%.2f, %.2f)", 
-               slow_m[1], slow_s[1], fast_m[2], fast_s[2], fast_m[1], fast_s[1]);
+PrintFormat("Hull EA NewBar: D1(%.2f, %.2f) H4_old(%.2f, %.2f) H4_new(%.2f, %.2f)", 
+            slow_m[1], slow_m[7], fast_m[2], fast_s[2], fast_m[1], fast_s[1]);
                
    if(h4_was_bearish && h4_is_bullish)
    {
