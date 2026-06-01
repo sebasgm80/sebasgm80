@@ -4,8 +4,14 @@ extends Node2D
 
 @onready var car = $Car
 @onready var road_spawner = $RoadSpawner
-@onready var parallax = $ParallaxBackground
+@onready var parallax = $ParallaxBg
 @onready var hud = $HUD
+
+func _ready() -> void:
+	assert(car != null, "Car node not found")
+	assert(road_spawner != null, "RoadSpawner node not found")
+	assert(parallax != null, "ParallaxBg node not found")
+	assert(hud != null, "HUD node not found")
 
 func _physics_process(delta: float) -> void:
 	var speed: float = car.current_speed
