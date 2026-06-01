@@ -1,0 +1,23 @@
+{
+  "active_plan": "/Users/sebas/horizonte-infinito/.sisyphus/plans/sistema-conduccion-2d.md",
+  "started_at": "2026-06-01T18:30:11.554Z",
+  "session_ids": [
+    "ses_17b9a10ceffeBQ06BzVy05xo1t"
+  ],
+  "session_origins": {
+    "ses_17b9a10ceffeBQ06BzVy05xo1t": "direct"
+  },
+  "plan_name": "sistema-conduccion-2d",
+  "agent": "atlas",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Project Scaffolding: Input Map + Constants Autoload",
+      "session_id": "ses_17b8b8638ffeTSGROv30JFv5dJ",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-06-01T18:32:10.879Z"
+    }
+  }
+}
