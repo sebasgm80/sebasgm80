@@ -50,6 +50,8 @@ func _physics_process(delta: float) -> void:
 	if _lane_change_cooldown > 0.0:
 		_lane_change_cooldown -= delta
 
+	queue_redraw()
+
 # === Input Handling ===
 func _unhandled_input(event: InputEvent) -> void:
 	if _is_changing_lane or _lane_change_cooldown > 0.0:
@@ -65,9 +67,14 @@ func _change_lane(target_lane: int) -> void:
 	_is_changing_lane = true
 	_current_lane = target_lane
 	var target_y: float = GlobalConstants.LANE_2_Y if target_lane == 2 else GlobalConstants.LANE_1_Y
+	var rotation_direction: float = -0.05 if target_lane == 2 else 0.05  # Slight tilt
 	var tween: Tween = create_tween()
 	tween.tween_property(self, "position:y", target_y, GlobalConstants.LANE_CHANGE_DURATION)\
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	tween.parallel().tween_property(self, "rotation", rotation_direction, GlobalConstants.LANE_CHANGE_DURATION * 0.5)\
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	tween.parallel().tween_property(self, "rotation", 0.0, GlobalConstants.LANE_CHANGE_DURATION * 0.5)\
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD).set_delay(GlobalConstants.LANE_CHANGE_DURATION * 0.5)
 	tween.tween_callback(_on_lane_change_complete)
 
 func _on_lane_change_complete() -> void:

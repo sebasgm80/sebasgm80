@@ -95,3 +95,11 @@
 - Updated `project.godot`: `run/main_scene="res://scenes/main.tscn"`
 - Z-ordering: parallax(0) → road(1) → car(2) → HUD (CanvasLayer auto-top)
 - No LSP for GDScript — verified syntax manually
+
+## 2026-06-01 — Task: Lane Transition Polish
+- Verified all requirements: EASE_OUT+TRANS_QUAD, cooldown 0.1s, input guards, lane limits
+- Added `queue_redraw()` in `_physics_process` for _draw() to update after position changes
+- Added subtle rotation effect (±0.05 rad) during lane change for visual polish:
+  - Tilt in movement direction during first half of tween
+  - Return to 0 rotation during second half with EASE_IN
+- Tween structure: position y tween + parallel rotation tween (forward + return)
