@@ -1,7 +1,5 @@
 extends Node
 
-class_name GlobalConstants
-
 # === Dimensions ===
 const SCREEN_WIDTH: int = 1920
 const SCREEN_HEIGHT: int = 1080
