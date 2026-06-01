@@ -42,3 +42,42 @@
 - All layers have mirroring enabled for tiling
 - Camera2D attached with current=true
 - No LSP available for GDScript — verified syntax manually by reading back files
+
+## 2026-06-01 — Task 5: Car Controller Implemented
+- Added `_physics_process(delta)` for continuous speed control via `Input.is_action_pressed()`
+- Added `_unhandled_input(event)` for discrete lane changes via `event.is_action_pressed()`
+- Added `_change_lane(target_lane)` using `create_tween()` with EASE_OUT + TRANS_QUAD
+- Added `_on_lane_change_complete()` callback to reset `_is_changing_lane` and set cooldown
+- Lane switching guarded by `_is_changing_lane` flag and `_lane_change_cooldown` (0.1s)
+- Speed clamped to [CAR_MIN_SPEED=50, CAR_MAX_SPEED=500] via `minf()`/`maxf()`
+- All values sourced from GlobalConstants (CAR_ACCELERATION, CAR_MIN/MAX_SPEED, LANE_CHANGE_DURATION, etc.)
+- Input validation: only `move_up` when `_current_lane == 1`, only `move_down` when `_current_lane == 2`
+
+## 2026-06-01 — Task 7: Parallax Scroll System Complete
+- Removed TODO comment from `parallax_scroller.gd` (logic already implemented)
+- `ParallaxBackground.scroll_offset` handles automatic per-layer movement via `motion_scale`
+- Each ParallaxLayer (0.1, 0.3, 0.7, 1.0) moves proportionally without manual per-layer code
+- Mirroring already configured in `.tscn` for infinite tiling
+- No LSP for GDScript — verified syntax by reading back file
+
+## 2026-06-01 — Task 8: Road Spawner Complete
+- Created `scripts/road/road_spawner.gd` with object pool pattern
+- Pool pre-instantiates MAX_ACTIVE_SEGMENTS=15 segments in `_ready()`
+- `_spawn_segment()` recycles from pool or instantiates new if pool empty
+- `_return_segment()` disables segment and returns to pool (no queue_free)
+- `_physics_process()` moves segments left based on `scroll_speed`, recycles when `x < -ROAD_SEGMENT_WIDTH`
+- `set_scroll_speed(speed)` allows external control of scroll speed
+- Created `scenes/road/road_spawner.tscn` with Node2D root + script attached
+- Uses `preload()` for ROAD_SEGMENT_SCENE (compile-time, not runtime load)
+- All dimensions from GlobalConstants (SCREEN_WIDTH=1920, ROAD_SEGMENT_WIDTH=400, etc.)
+- No LSP for GDScript — verified syntax by reading back files
+
+## 2026-06-01 — Task 10: HUD Speedometer Created
+- Created `scripts/ui/hud.gd` with CanvasLayer root
+- `@onready` pattern for node references (typed: Label, ColorRect)
+- `update_speed(speed: float)` formats as "%d km/h" via string formatting
+- Created `scenes/ui/hud.tscn` with proper Godot 4.x format=3
+- SpeedBackground ColorRect: offset 1620,20 to 1900,80, color(0,0,0,0.5)
+- SpeedLabel Label: offset 1630,25 to 1890,75, h-align RIGHT(2), v-align CENTER(1)
+- Font size 36, white color — readable at 1920×1080
+- No LSP available for GDScript — verified syntax by reading files back

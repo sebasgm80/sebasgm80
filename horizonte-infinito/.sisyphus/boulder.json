@@ -5,13 +5,21 @@
     "ses_17b9a10ceffeBQ06BzVy05xo1t",
     "ses_17b897ee5ffed8wd56X0e6844W",
     "ses_17b8952d2ffeJqpJKzJNsz4iQU",
-    "ses_17b88ceaaffea0iUaNgAAc7Jae"
+    "ses_17b88ceaaffea0iUaNgAAc7Jae",
+    "ses_17b86e5c3ffebaEbVplLbMxH3o",
+    "ses_17b86acfdffeX0fnR5y6zU8Nm8",
+    "ses_17b8685bfffeW9hQ7kseh2MFZd",
+    "ses_17b865af9ffeMwIcbDWIFieFA9"
   ],
   "session_origins": {
     "ses_17b9a10ceffeBQ06BzVy05xo1t": "direct",
     "ses_17b897ee5ffed8wd56X0e6844W": "appended",
     "ses_17b8952d2ffeJqpJKzJNsz4iQU": "appended",
-    "ses_17b88ceaaffea0iUaNgAAc7Jae": "appended"
+    "ses_17b88ceaaffea0iUaNgAAc7Jae": "appended",
+    "ses_17b86e5c3ffebaEbVplLbMxH3o": "appended",
+    "ses_17b86acfdffeX0fnR5y6zU8Nm8": "appended",
+    "ses_17b8685bfffeW9hQ7kseh2MFZd": "appended",
+    "ses_17b865af9ffeMwIcbDWIFieFA9": "appended"
   },
   "plan_name": "sistema-conduccion-2d",
   "agent": "atlas",
@@ -42,6 +50,15 @@
       "agent": "Sisyphus-Junior",
       "category": "quick",
       "updated_at": "2026-06-01T18:35:43.624Z"
+    },
+    "todo:5": {
+      "task_key": "todo:5",
+      "task_label": "5",
+      "task_title": "Car Controller: Lane Switching + Speed Control",
+      "session_id": "ses_17b86acfdffeX0fnR5y6zU8Nm8",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-06-01T18:37:42.207Z"
     }
   }
 }

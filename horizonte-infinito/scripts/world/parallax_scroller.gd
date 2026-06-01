@@ -1,7 +1,6 @@
 extends ParallaxBackground
 ## Parallax scroll controller for Horizonte Infinito.
 ## Moves all parallax layers based on car speed.
-## TODO: Implement scroll logic in Task 7.
 
 var scroll_speed: float = 0.0
 

@@ -476,7 +476,7 @@ Max Concurrent: 4 (Wave 2)
 
 ### Wave 2 — Core Systems (After Wave 1, ALL PARALLEL)
 
-- [ ] 5. Car Controller: Lane Switching + Speed Control
+- [x] 5. Car Controller: Lane Switching + Speed Control
 
   **What to do**:
   - Implementar `scripts/car/car_controller.gd` en la escena `car.tscn`
@@ -578,7 +578,7 @@ Max Concurrent: 4 (Wave 2)
   - Message: `feat(car): implement lane switching and speed control`
   - Files: `scripts/car/car_controller.gd`
 
-- [ ] 6. Road Spawning System: Pool + Recycling
+- [x] 6. Road Spawning System: Pool + Recycling
 
   **What to do**:
   - Implementar `scripts/road/road_spawner.gd` (script independiente, no en escena)
@@ -663,7 +663,7 @@ Max Concurrent: 4 (Wave 2)
   - Message: `feat(road): implement road spawning system with object pool`
   - Files: `scripts/road/road_spawner.gd`, `scenes/road/road_spawner.tscn`
 
-- [ ] 7. Parallax Scroll System
+- [x] 7. Parallax Scroll System
 
   **What to do**:
   - Implementar `scripts/world/parallax_scroller.gd` en la escena `parallax_background.tscn`
@@ -735,7 +735,7 @@ Max Concurrent: 4 (Wave 2)
   - Message: `feat(world): implement parallax scroll system`
   - Files: `scripts/world/parallax_scroller.gd`, `scenes/world/parallax_background.tscn`
 
-- [ ] 8. Speedometer HUD
+- [x] 8. Speedometer HUD
 
   **What to do**:
   - Crear directorio `scenes/ui/` y `scripts/ui/`
