@@ -813,7 +813,7 @@ Max Concurrent: 4 (Wave 2)
 
 ### Wave 3 — Integration & Polish (After Wave 2, SEQUENTIAL)
 
-- [ ] 9. Main Scene Assembly
+- [x] 9. Main Scene Assembly
 
   **What to do**:
   - Crear `scenes/main.tscn` con raíz `Node2D` llamado "Main"

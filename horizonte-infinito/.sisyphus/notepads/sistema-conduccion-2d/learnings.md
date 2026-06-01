@@ -81,3 +81,17 @@
 - SpeedLabel Label: offset 1630,25 to 1890,75, h-align RIGHT(2), v-align CENTER(1)
 - Font size 36, white color — readable at 1920×1080
 - No LSP available for GDScript — verified syntax by reading files back
+
+## 2026-06-01 — Task 11: Main Scene Assembled
+- Created `scripts/main.gd` — Node2D controller that wires all 4 systems
+- `@onready` references: car, road_spawner, parallax, hud (typed)
+- `_physics_process(delta)` drives all systems via car's `current_speed`
+- Created `scenes/main.tscn` — Godot 4.x format=3 with 5 ext_resources
+- Main scene references all 4 systems as PackedScene instances:
+  1. ParallaxBackground (z_index=0, background)
+  2. RoadSpawner (z_index=1, road on parallax)
+  3. Car (z_index=2, car on top of road)
+  4. HUD (CanvasLayer, auto-renders on top)
+- Updated `project.godot`: `run/main_scene="res://scenes/main.tscn"`
+- Z-ordering: parallax(0) → road(1) → car(2) → HUD (CanvasLayer auto-top)
+- No LSP for GDScript — verified syntax manually
