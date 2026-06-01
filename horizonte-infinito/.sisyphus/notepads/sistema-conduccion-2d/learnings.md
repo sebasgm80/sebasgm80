@@ -103,3 +103,89 @@
   - Tilt in movement direction during first half of tween
   - Return to 0 rotation during second half with EASE_IN
 - Tween structure: position y tween + parallel rotation tween (forward + return)
+
+## 2026-06-01 — Final QA Verification (Tasks 1-10)
+
+### Files Verified
+- 10 .gd scripts: constants.gd, car_controller.gd, road_segment.gd, road_spawner.gd, parallax_scroller.gd, hud.gd, main.gd, mountain_drawer.gd, tree_drawer.gd, guardrail_drawer.gd
+- 6 .tscn scenes: main.tscn, car.tscn, road_segment.tscn, road_spawner.tscn, parallax_background.tscn, hud.tscn
+- 1 project.godot
+
+### Task 1 — Project Scaffolding: ✅ PASS
+- [x] `scripts/globals/constants.gd` exists with all 31 typed constants (now 32 after fix)
+- [x] `GlobalConstants` registered as autoload in project.godot [autoload] section
+- [x] Input Map has 4 actions: move_up, move_down, speed_up, speed_down (WASD + arrows)
+
+### Task 2 — Car Sprite: ✅ PASS
+- [x] `scenes/car/car.tscn` exists with CharacterBody2D root
+- [x] Car draws itself via `_draw()` (body + cabin + wheels)
+- [x] CollisionShape2D present with RectangleShape2D (120×60)
+
+### Task 3 — Road Segment: ✅ PASS
+- [x] `scenes/road/road_segment.tscn` exists with Node2D root
+- [x] Road draws via `_draw()` (asphalt, center line, edges, guardrails)
+- [x] VisibleOnScreenNotifier2D attached with aabb = Rect2(-200, -540, 400, 1080)
+
+### Task 4 — Parallax Background: ✅ PASS
+- [x] `scenes/world/parallax_background.tscn` exists with ParallaxBackground root
+- [x] 4 ParallaxLayer children with motion_scale: 0.1 (Sky), 0.3 (Mountains), 0.7 (Trees), 1.0 (Guardrail)
+- [x] Camera2D with current=true
+- [x] Mirroring configured on all layers
+
+### Task 5 — Car Controller: ✅ PASS
+- [x] Speed control via `Input.is_action_pressed` in `_physics_process`
+- [x] Lane switching via `_unhandled_input` with tween (EASE_OUT + TRANS_QUAD)
+- [x] Speed clamped [CAR_MIN_SPEED=50, CAR_MAX_SPEED=500]
+- [x] Lane limits enforced (move_up only lane 1→2, move_down only lane 2→1)
+
+### Task 6 — Road Spawner: ✅ PASS
+- [x] Object pool pattern (pre-instantiate MAX_ACTIVE_SEGMENTS=15 segments)
+- [x] `set_scroll_speed()` method exposed
+- [x] No queue_free() — segments recycled via pool
+- [x] Segments move left based on scroll_speed
+
+### Task 7 — Parallax Scroll: ✅ PASS
+- [x] `scroll_offset.x` updated per frame based on speed
+- [x] Mirroring configured for infinite tiling
+
+### Task 8 — HUD: ✅ PASS
+- [x] CanvasLayer root with Label showing speed
+- [x] `update_speed(speed: float)` formats as "%d km/h"
+
+### Task 9 — Main Scene: ✅ PASS
+- [x] main.tscn wires all 4 systems (ParallaxBackground, RoadSpawner, Car, HUD)
+- [x] main.gd reads car.current_speed and drives spawner/parallax/hud
+- [x] project.godot has run/main_scene set to "res://scenes/main.tscn"
+
+### Task 10 — Lane Transition Polish: ✅ PASS
+- [x] EASE_OUT + TRANS_QUAD on position tween
+- [x] Cooldown 0.1s after lane change (_lane_change_cooldown)
+- [x] Input blocked during tween (_is_changing_lane flag)
+- [x] Subtle rotation effect (±0.05 rad) during lane change
+- [x] queue_redraw() in _physics_process
+
+### Additional Checks: ✅ PASS
+- [x] No TODO/FIXME/HACK comments found in any .gd file
+- [x] No queue_free() in road_spawner.gd (object pool pattern confirmed)
+- [x] No RigidBody2D or complex physics used
+- [x] No external textures or assets (all via _draw() and ColorRect)
+- [x] No hardcoded magic numbers outside constants.gd (FIXED: guardrail_drawer.gd)
+
+### Bug Found and Fixed
+- **guardrail_drawer.gd**: Had hardcoded 1920 values for SCREEN_WIDTH and 200 for post spacing
+- **Fix applied**: Added `GUARDRAIL_POST_SPACING: int = 200` to constants.gd
+- **Fix applied**: Updated guardrail_drawer.gd to use `GlobalConstants.SCREEN_WIDTH` and `GlobalConstants.GUARDRAIL_POST_SPACING`
+
+### Constants Count
+- Before fix: 31 constants
+- After fix: 32 constants (added GUARDRAIL_POST_SPACING)
+
+### Verification Method
+- Read every .gd file in project
+- Read every .tscn file in project
+- Read project.godot
+- Grep for TODO, FIXME, HACK, queue_free, RigidBody
+- Grep for hardcoded numeric values outside constants.gd
+
+### Conclusion
+All 10 tasks' acceptance criteria are verified PASS. One minor bug fixed (hardcoded values in guardrail_drawer.gd). Project is ready for testing.

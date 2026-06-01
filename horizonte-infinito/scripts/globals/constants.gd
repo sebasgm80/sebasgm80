@@ -30,6 +30,9 @@ const PARALLAX_MOUNTAINS: float = 0.3
 const PARALLAX_TREES: float = 0.7
 const PARALLAX_GUARDRAIL: float = 1.0
 
+# === Guardrail ===
+const GUARDRAIL_POST_SPACING: int = 200
+
 # === Colors ===
 const COLOR_SKY: Color = Color(0.4, 0.6, 0.9)
 const COLOR_MOUNTAIN: Color = Color(0.3, 0.4, 0.3)
