@@ -1,4 +1,4 @@
-[gd_scene load_steps=5]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/parallax_scroller.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/world/mountain_drawer.gd" id="2"]
@@ -17,7 +17,7 @@ offset_left = 0.0
 offset_top = 0.0
 offset_right = 1920.0
 offset_bottom = 1080.0
-color = Color(0.4, 0.6, 0.9)
+color = Color(0.4, 0.6, 0.9, 1)
 
 [node name="MountainsLayer" type="ParallaxLayer" parent="."]
 motion_scale = Vector2(0.3, 1)
