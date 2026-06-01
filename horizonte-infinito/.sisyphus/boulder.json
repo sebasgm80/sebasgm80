@@ -9,7 +9,11 @@
     "ses_17b86e5c3ffebaEbVplLbMxH3o",
     "ses_17b86acfdffeX0fnR5y6zU8Nm8",
     "ses_17b8685bfffeW9hQ7kseh2MFZd",
-    "ses_17b865af9ffeMwIcbDWIFieFA9"
+    "ses_17b865af9ffeMwIcbDWIFieFA9",
+    "ses_17b7ed3a2ffehyPTZRMxxvUIu1",
+    "ses_17b7ec590ffeNblCYbq3PbN9WU",
+    "ses_17b7ea86fffeb1MFTFGJPi5SOP",
+    "ses_17b7e8a5dffeMk7u5nLe8w0bCF"
   ],
   "session_origins": {
     "ses_17b9a10ceffeBQ06BzVy05xo1t": "direct",
@@ -19,7 +23,11 @@
     "ses_17b86e5c3ffebaEbVplLbMxH3o": "appended",
     "ses_17b86acfdffeX0fnR5y6zU8Nm8": "appended",
     "ses_17b8685bfffeW9hQ7kseh2MFZd": "appended",
-    "ses_17b865af9ffeMwIcbDWIFieFA9": "appended"
+    "ses_17b865af9ffeMwIcbDWIFieFA9": "appended",
+    "ses_17b7ed3a2ffehyPTZRMxxvUIu1": "appended",
+    "ses_17b7ec590ffeNblCYbq3PbN9WU": "appended",
+    "ses_17b7ea86fffeb1MFTFGJPi5SOP": "appended",
+    "ses_17b7e8a5dffeMk7u5nLe8w0bCF": "appended"
   },
   "plan_name": "sistema-conduccion-2d",
   "agent": "atlas",
@@ -68,6 +76,33 @@
       "agent": "Sisyphus-Junior",
       "category": "quick",
       "updated_at": "2026-06-01T18:40:05.374Z"
+    },
+    "todo:10": {
+      "task_key": "todo:10",
+      "task_label": "10",
+      "task_title": "Lane Transition Polish + Edge Cases",
+      "session_id": "ses_17b82c93fffe1CKI4YUXMtmqVO",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-06-01T18:41:56.678Z"
+    },
+    "todo:11": {
+      "task_key": "todo:11",
+      "task_label": "11",
+      "task_title": "Final QA Verification",
+      "session_id": "ses_17b8089a9ffeD9UCfnNDcCYvnD",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-06-01T18:44:59.139Z"
+    },
+    "final-wave:f1": {
+      "task_key": "final-wave:f1",
+      "task_label": "F1",
+      "task_title": "**Plan Compliance Audit** — `oracle`",
+      "session_id": "ses_17b7a71d0ffeahMz36SxoKM9MG",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-06-01T18:50:54.303Z"
     }
   }
 }

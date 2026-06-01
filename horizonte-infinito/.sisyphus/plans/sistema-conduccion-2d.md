@@ -899,7 +899,7 @@ Max Concurrent: 4 (Wave 2)
   - Message: `feat(main): assemble main scene with all systems`
   - Files: `scenes/main.tscn`, `scripts/main.gd`
 
-- [ ] 10. Lane Transition Polish + Edge Cases
+- [x] 10. Lane Transition Polish + Edge Cases
 
   **What to do**:
   - Revisar y pulir el cambio de carril:
@@ -972,7 +972,7 @@ Max Concurrent: 4 (Wave 2)
   - Message: `polish(car): refine lane transition easing and edge cases`
   - Files: `scripts/car/car_controller.gd`, `scripts/globals/constants.gd` (si se ajustaron valores)
 
-- [ ] 11. Final QA Verification
+- [x] 11. Final QA Verification
 
   **What to do**:
   - Ejecutar el juego completo y verificar TODOS los criterios de aceptación de tareas anteriores:

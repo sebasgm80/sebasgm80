@@ -2,7 +2,7 @@ extends Node2D
 ## Draws 5-7 mountain triangles for the parallax background.
 
 func _draw() -> void:
-	var mountains: Array = [
+	var mountains: Array[Dictionary] = [
 		{"x": 100.0, "height": 350.0, "width": 300.0},
 		{"x": 400.0, "height": 280.0, "width": 250.0},
 		{"x": 700.0, "height": 400.0, "width": 350.0},

@@ -24,18 +24,18 @@ func _draw() -> void:
 	)
 	# Cabin (darker, smaller rectangle on top)
 	draw_rect(
-		Rect2(-GlobalConstants.CAR_WIDTH / 2.0 + 30, -GlobalConstants.CAR_HEIGHT / 2.0 - 20,
-		      40, 20),
+		Rect2(-GlobalConstants.CAR_WIDTH / 2.0 + GlobalConstants.CAR_CABIN_OFFSET_X, -GlobalConstants.CAR_HEIGHT / 2.0 - GlobalConstants.CAR_CABIN_OFFSET_Y,
+		      GlobalConstants.CAR_CABIN_WIDTH, GlobalConstants.CAR_CABIN_HEIGHT),
 		GlobalConstants.COLOR_CAR.darkened(0.2)
 	)
 	# Wheels (black circles)
 	draw_circle(
-		Vector2(-GlobalConstants.CAR_WIDTH / 2.0 + 20, GlobalConstants.CAR_HEIGHT / 2.0),
-		10, Color(0.1, 0.1, 0.1)
+		Vector2(-GlobalConstants.CAR_WIDTH / 2.0 + GlobalConstants.CAR_WHEEL_OFFSET_X, GlobalConstants.CAR_HEIGHT / 2.0),
+		GlobalConstants.CAR_WHEEL_RADIUS, GlobalConstants.COLOR_CAR_WHEEL
 	)
 	draw_circle(
-		Vector2(GlobalConstants.CAR_WIDTH / 2.0 - 20, GlobalConstants.CAR_HEIGHT / 2.0),
-		10, Color(0.1, 0.1, 0.1)
+		Vector2(GlobalConstants.CAR_WIDTH / 2.0 - GlobalConstants.CAR_WHEEL_OFFSET_X, GlobalConstants.CAR_HEIGHT / 2.0),
+		GlobalConstants.CAR_WHEEL_RADIUS, GlobalConstants.COLOR_CAR_WHEEL
 	)
 
 # === Physics Process ===
@@ -67,7 +67,7 @@ func _change_lane(target_lane: int) -> void:
 	_is_changing_lane = true
 	_current_lane = target_lane
 	var target_y: float = GlobalConstants.LANE_2_Y if target_lane == 2 else GlobalConstants.LANE_1_Y
-	var rotation_direction: float = -0.05 if target_lane == 2 else 0.05  # Slight tilt
+	var rotation_direction: float = -GlobalConstants.CAR_LANE_TILT if target_lane == 2 else GlobalConstants.CAR_LANE_TILT  # Slight tilt
 	var tween: Tween = create_tween()
 	tween.tween_property(self, "position:y", target_y, GlobalConstants.LANE_CHANGE_DURATION)\
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)

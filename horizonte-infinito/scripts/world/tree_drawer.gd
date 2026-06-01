@@ -2,7 +2,7 @@ extends Node2D
 ## Draws 8-12 tree shapes (trunk + canopy) for the parallax background.
 
 func _draw() -> void:
-	var trees: Array = [
+	var trees: Array[Dictionary] = [
 		{"x": 80.0, "y": GlobalConstants.LANE_2_Y - 60.0, "h": 120.0},
 		{"x": 250.0, "y": GlobalConstants.LANE_2_Y - 50.0, "h": 100.0},
 		{"x": 450.0, "y": GlobalConstants.LANE_2_Y - 70.0, "h": 140.0},
@@ -17,11 +17,11 @@ func _draw() -> void:
 
 	for t in trees:
 		# Trunk (brown rectangle)
-		draw_rect(Rect2(t["x"] - 5.0, t["y"] - t["h"] + 30.0, 10.0, t["h"] - 30.0), Color(0.4, 0.25, 0.1))
+		draw_rect(Rect2(t["x"] - GlobalConstants.TREE_TRUNK_WIDTH / 2.0, t["y"] - t["h"] + GlobalConstants.TREE_TRUNK_HEIGHT, GlobalConstants.TREE_TRUNK_WIDTH, t["h"] - GlobalConstants.TREE_TRUNK_HEIGHT), GlobalConstants.COLOR_TREE_TRUNK)
 		# Canopy (green triangle)
 		var canopy_points: PackedVector2Array = PackedVector2Array([
-			Vector2(t["x"] - 25.0, t["y"] - t["h"] + 30.0),
+			Vector2(t["x"] - GlobalConstants.TREE_CANOPY_WIDTH / 2.0, t["y"] - t["h"] + GlobalConstants.TREE_TRUNK_HEIGHT),
 			Vector2(t["x"], t["y"] - t["h"]),
-			Vector2(t["x"] + 25.0, t["y"] - t["h"] + 30.0),
+			Vector2(t["x"] + GlobalConstants.TREE_CANOPY_WIDTH / 2.0, t["y"] - t["h"] + GlobalConstants.TREE_TRUNK_HEIGHT),
 		])
 		draw_colored_polygon(canopy_points, GlobalConstants.COLOR_TREE)
