@@ -1,0 +1,45 @@
+[gd_scene load_steps=6]
+
+[ext_resource type="Script" path="res://scripts/world/parallax_scroller.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/world/mountain_drawer.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/world/tree_drawer.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/world/guardrail_drawer.gd" id="4"]
+
+[node name="ParallaxBackground" type="ParallaxBackground"]
+script = ExtResource(1)
+
+[node name="SkyLayer" type="ParallaxLayer" parent="."]
+motion_scale = Vector2(0.1, 1)
+mirroring = Vector2(1920, 0)
+
+[node name="SkyColorRect" type="ColorRect" parent="SkyLayer"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1920.0
+offset_bottom = 1080.0
+color = Color(0.4, 0.6, 0.9)
+
+[node name="MountainsLayer" type="ParallaxLayer" parent="."]
+motion_scale = Vector2(0.3, 1)
+mirroring = Vector2(1920, 0)
+
+[node name="MountainDrawer" type="Node2D" parent="MountainsLayer"]
+script = ExtResource(2)
+
+[node name="TreesLayer" type="ParallaxLayer" parent="."]
+motion_scale = Vector2(0.7, 1)
+mirroring = Vector2(1920, 0)
+
+[node name="TreeDrawer" type="Node2D" parent="TreesLayer"]
+script = ExtResource(3)
+
+[node name="GuardrailLayer" type="ParallaxLayer" parent="."]
+motion_scale = Vector2(1, 1)
+mirroring = Vector2(400, 0)
+
+[node name="GuardrailDrawer" type="Node2D" parent="GuardrailLayer"]
+script = ExtResource(4)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+current = true
+position_smoothing_enabled = false

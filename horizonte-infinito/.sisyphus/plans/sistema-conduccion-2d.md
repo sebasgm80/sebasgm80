@@ -179,7 +179,7 @@ Max Concurrent: 4 (Wave 2)
 
 ### Wave 1 — Foundation (Start Immediately, ALL PARALLEL)
 
-- [ ] 1. Project Scaffolding: Input Map + Constants Autoload
+- [x] 1. Project Scaffolding: Input Map + Constants Autoload
 
   **What to do**:
   - Configurar Input Map en Project Settings con 4 acciones:
@@ -286,7 +286,7 @@ Max Concurrent: 4 (Wave 2)
   - Message: `feat(project): add Input Map and GlobalConstants autoload`
   - Files: `scripts/globals/constants.gd`, `project.godot`
 
-- [ ] 2. Car Sprite Geométrico + Escena Base
+- [x] 2. Car Sprite Geométrico + Escena Base
 
   **What to do**:
   - Crear directorio `scenes/car/` y `scripts/car/`
@@ -355,7 +355,7 @@ Max Concurrent: 4 (Wave 2)
   - Message: `feat(car): add geometric car scene with collision`
   - Files: `scenes/car/car.tscn`, `scripts/car/car_controller.gd`
 
-- [ ] 3. Road Segment Geométrico + Escena Base
+- [x] 3. Road Segment Geométrico + Escena Base
 
   **What to do**:
   - Crear directorio `scenes/road/` y `scripts/road/`
@@ -414,7 +414,7 @@ Max Concurrent: 4 (Wave 2)
   - Message: `feat(road): add geometric road segment scene`
   - Files: `scenes/road/road_segment.tscn`, `scripts/road/road_segment.gd`
 
-- [ ] 4. Parallax Background con 4 Capas
+- [x] 4. Parallax Background con 4 Capas
 
   **What to do**:
   - Crear directorio `scenes/world/`

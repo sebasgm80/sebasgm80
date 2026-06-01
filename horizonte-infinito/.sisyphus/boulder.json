@@ -2,10 +2,16 @@
   "active_plan": "/Users/sebas/horizonte-infinito/.sisyphus/plans/sistema-conduccion-2d.md",
   "started_at": "2026-06-01T18:30:11.554Z",
   "session_ids": [
-    "ses_17b9a10ceffeBQ06BzVy05xo1t"
+    "ses_17b9a10ceffeBQ06BzVy05xo1t",
+    "ses_17b897ee5ffed8wd56X0e6844W",
+    "ses_17b8952d2ffeJqpJKzJNsz4iQU",
+    "ses_17b88ceaaffea0iUaNgAAc7Jae"
   ],
   "session_origins": {
-    "ses_17b9a10ceffeBQ06BzVy05xo1t": "direct"
+    "ses_17b9a10ceffeBQ06BzVy05xo1t": "direct",
+    "ses_17b897ee5ffed8wd56X0e6844W": "appended",
+    "ses_17b8952d2ffeJqpJKzJNsz4iQU": "appended",
+    "ses_17b88ceaaffea0iUaNgAAc7Jae": "appended"
   },
   "plan_name": "sistema-conduccion-2d",
   "agent": "atlas",
@@ -18,6 +24,24 @@
       "agent": "Sisyphus-Junior",
       "category": "quick",
       "updated_at": "2026-06-01T18:32:10.879Z"
+    },
+    "todo:2": {
+      "task_key": "todo:2",
+      "task_label": "2",
+      "task_title": "Car Sprite Geométrico + Escena Base",
+      "session_id": "ses_17b8952d2ffeJqpJKzJNsz4iQU",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-06-01T18:35:01.922Z"
+    },
+    "todo:4": {
+      "task_key": "todo:4",
+      "task_label": "4",
+      "task_title": "Parallax Background con 4 Capas",
+      "session_id": "ses_17b88ceaaffea0iUaNgAAc7Jae",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-06-01T18:35:43.624Z"
     }
   }
 }
