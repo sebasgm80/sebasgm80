@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>TrendPulse — Pipeline Agentic IA</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div id="dashboard">
+    <!-- LEFT: Controls -->
+    <aside id="col-left">
+      <h2>Control</h2>
+      <section id="config-section">
+        <h3>Configuración</h3>
+        <label>Noticias a procesar: <span id="slider-value">5</span></label>
+        <input type="range" id="slider-top-n" min="3" max="20" value="5">
+        <fieldset id="platforms-fieldset">
+          <legend>Plataformas</legend>
+          <label><input type="checkbox" value="x" checked> X / Twitter</label>
+          <label><input type="checkbox" value="linkedin" checked> LinkedIn</label>
+          <label><input type="checkbox" value="threads" checked> Threads</label>
+        </fieldset>
+      </section>
+      <section id="pipeline-section">
+        <h3>Pipeline</h3>
+        <button id="btn-scrape">Scrapear fuentes</button>
+        <button id="btn-curate">Curar noticias</button>
+        <button id="btn-generate">Generar posts</button>
+        <button id="btn-run-all">▶ Ejecutar pipeline completo</button>
+      </section>
+      <section id="status-section">
+        <h3>Estado</h3>
+        <div id="pipeline-status">Inactivo</div>
+      </section>
+    </aside>
+
+    <!-- CENTER: Agent console + logs + news -->
+    <main id="col-center">
+      <div id="warning-banner" hidden></div>
+      <input id="nl-input" type="text" disabled placeholder="Disponible en Fase 2 (requiere agente con tools)">
+      <!-- ponytail: Fase 2 only - DO NOT WIRE UP -->
+      <section id="news-section">
+        <h3>Noticias curadas</h3>
+        <div id="news-list"></div>
+      </section>
+      <section id="log-section">
+        <h3>Logs</h3>
+        <pre id="log-stream"></pre>
+      </section>
+    </main>
+
+    <!-- RIGHT: Generated posts -->
+    <aside id="col-right">
+      <h3>Posts generados</h3>
+      <div id="posts-section">
+        <div id="posts-list"></div>
+      </div>
+    </aside>
+  </div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

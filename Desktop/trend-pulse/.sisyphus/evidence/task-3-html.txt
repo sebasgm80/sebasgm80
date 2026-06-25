@@ -1,0 +1,4 @@
+=== T3: static/index.html ===
+Columns found: 3
+      <!-- ponytail: Fase 2 only - DO NOT WIRE UP -->
+nl-input disabled: 1

@@ -1,0 +1,4 @@
+=== T2: pipeline/__init__.py ===
+Import OK
+is_seen test OK
+NO_STORAGE_PY=VETO_OK
