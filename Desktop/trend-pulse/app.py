@@ -120,9 +120,6 @@ async def _run_curate(top_n: int):
         if warning:
             pipeline_state["warning"] = warning
         log("info", f"Curate done: {len(curated)} items")
-    except HTTPException:
-        pipeline_state["running"] = False
-        raise
     except Exception as e:
         pipeline_state["error"] = str(e)
         log("error", f"Curate failed: {e}")
@@ -151,9 +148,6 @@ async def _run_generate(top_n: int, platforms: list[str]):
         if warning:
             pipeline_state["warning"] = warning
         log("info", f"Generate done: {len(posts)} posts")
-    except HTTPException:
-        pipeline_state["running"] = False
-        raise
     except Exception as e:
         pipeline_state["error"] = str(e)
         log("error", f"Generate failed: {e}")

@@ -1185,7 +1185,7 @@ Max Concurrent: 5 (Wave 1)
   - Files: `app.py`
   - Pre-commit: `python -m py_compile app.py`
 
-- [ ] 10. **Frontend lógica reactiva (`static/app.js`)**
+- [x] 10. **Frontend lógica reactiva (`static/app.js`)**
 
   **What to do**:
   - Estado local: `let pollingInterval = null; let lastLogTs = null;`
@@ -1297,7 +1297,7 @@ Max Concurrent: 5 (Wave 1)
   - Files: `static/app.js`
   - Pre-commit: `grep -cE 'import.*http|cdn\.' static/app.js | grep -q '^0$'`
 
-- [ ] 11. **Tests API (`tests/test_api.py`)**
+- [x] 11. **Tests API (`tests/test_api.py`)**
 
   **What to do**:
   - Usar `pytest` + `httpx.AsyncClient` o `fastapi.testclient.TestClient`
@@ -1389,7 +1389,7 @@ Max Concurrent: 5 (Wave 1)
   - Files: `tests/test_api.py`
   - Pre-commit: `pytest tests/test_api.py -v`
 
-- [ ] 12. **Tests UI Playwright (`tests/test_dashboard.py`)**
+- [x] 12. **Tests UI Playwright (`tests/test_dashboard.py`)**
 
   **What to do**:
   - Usar `playwright` Python (sync API o async)
