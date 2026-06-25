@@ -1,0 +1,12 @@
+=== requirements.txt ===
+       9 /Users/sebas/Desktop/trend-pulse/requirements.txt
+
+=== sources.json ===
+subreddits: 4 hn_keywords: 10
+
+=== .gitignore .env ===
+1
+
+=== .env.example has GEMINI_API_KEY ===
+1
+ALL_CONFIG_CHECKS_PASSED
