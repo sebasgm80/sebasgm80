@@ -1060,7 +1060,7 @@ Max Concurrent: 5 (Wave 1)
   - Files: `pipeline/generator.py`
   - Pre-commit: `python -m py_compile pipeline/generator.py`
 
-- [ ] 9. **FastAPI app + endpoints + BackgroundTasks (`app.py`)**
+- [x] 9. **FastAPI app + endpoints + BackgroundTasks (`app.py`)**
 
   **What to do**:
   - Crear `app.py` con FastAPI app, configuración y todos los endpoints
