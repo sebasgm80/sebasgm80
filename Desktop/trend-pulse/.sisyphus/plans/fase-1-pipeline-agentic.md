@@ -1478,19 +1478,19 @@ Max Concurrent: 5 (Wave 1)
 > **NO auto-proceder tras verificación. Esperar aprobación explícita del usuario antes de marcar trabajo completo.**
 > **No marcar F1-F4 como checked antes de obtener el okay del usuario.**
 
-- [ ] F1. **Plan Compliance Audit** — `oracle`
+- [x] F1. **Plan Compliance Audit** — `oracle`
   Leer el plan end-to-end. Para cada "Must Have": verificar implementación existe (leer archivo, curl endpoint, ejecutar comando). Para cada "Must NOT Have": grep en el codebase por patrones prohibidos — rechazar con `file:line` si encuentra. Verificar evidence files existen en `.sisyphus/evidence/`. Comparar deliverables vs plan.
   Output: `Must Have [N/N] | Must NOT Have [N/N] | Tasks [N/N] | VERDICT: APPROVE/REJECT`
 
-- [ ] F2. **Code Quality Review** — `unspecified-high`
+- [x] F2. **Code Quality Review** — `unspecified-high`
   Ejecutar `python -m py_compile app.py pipeline/*.py` + `pytest`. Revisar archivos cambiados por: `# type: ignore` sin razón, `except: pass`, prints de debug, código comentado, imports sin usar, async sin necesidad. Check AI slop: comentarios excesivos, sobre-abstracción, nombres genéricos (data/result/item/temp), wrappers innecesarios. Verificar línea por línea que `pipeline/storage.py` NO existe.
   Output: `Build [PASS/FAIL] | pytest [N pass/N fail] | Files [N clean/N issues] | VERDICT`
 
-- [ ] F3. **Real Manual QA** — `unspecified-high` (+ skill `playwright`)
+- [x] F3. **Real Manual QA** — `unspecified-high` (+ skill `playwright`)
   Empezar de estado limpio. Ejecutar TODOS los QA scenarios de TODAS las tareas — seguir pasos exactos, capturar evidence. Probar integración cross-task: pipeline completo de extremo a extremo con keys reales (si están en `.env`, sino simular con respuestas mocked). Probar failure modes obligatorios (5 escenarios). Guardar evidence en `.sisyphus/evidence/final-qa/`.
   Output: `Scenarios [N/N pass] | Integration [PASS/FAIL] | Failure Modes [5/5] | VERDICT`
 
-- [ ] F4. **Scope Fidelity Check** — `deep`
+- [x] F4. **Scope Fidelity Check** — `deep`
   Para cada task: leer "What to do", leer el diff real (git log/diff). Verificar 1:1 — todo lo del spec se construyó (nada falta), nada fuera del spec se construyó (nada de scope creep). Check "Must NOT do" compliance (especialmente la lista de 25+ vetos del plan). Detectar contaminación cross-task: Task N tocando archivos de Task M sin justificación. Flag cambios no contabilizados.
   Output: `Tasks [N/N compliant] | Vetos respetados [N/N] | Contaminación [CLEAN/N issues] | VERDICT`
 
