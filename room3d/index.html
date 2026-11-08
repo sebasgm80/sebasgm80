@@ -1,186 +1,237 @@
 <meta charset="utf-8">
 <title>Habitación 3D</title>
 <style>
-  html,body{margin:0;height:100%;background:#fff;overflow:hidden}
+  html,body{margin:0;height:100%;background:#fff;overflow:hidden;font:13px system-ui,-apple-system,sans-serif}
   canvas{display:block;width:100vw;height:100vh}
-  #hint{position:fixed;left:12px;bottom:10px;font:12px system-ui,sans-serif;color:#556;background:rgba(255,255,255,.85);padding:4px 8px;border-radius:4px;pointer-events:none}
+  #bar{position:fixed;top:12px;left:12px;display:flex;gap:6px;z-index:2}
+  #bar button{border:1px solid #9aa4b2;background:#fff;color:#222;padding:6px 12px;border-radius:6px;cursor:pointer}
+  #bar button[aria-pressed="true"]{background:#2b3a4f;color:#fff;border-color:#2b3a4f}
+  #hint{position:fixed;left:12px;bottom:10px;color:#556;background:rgba(255,255,255,.85);padding:4px 8px;border-radius:4px;pointer-events:none}
 </style>
 <script type="importmap">
 { "imports": { "three": "./three.module.min.js" } }
 </script>
+<div id="bar">
+  <button id="btn-ref" aria-pressed="true">Calco</button>
+  <button id="btn-3d" aria-pressed="false">3D</button>
+</div>
+<div id="hint">Calco: copia exacta de la imagen. 3D: arrastra para girar.</div>
 <script type="module">
 import * as THREE from 'three';
 
-// ---- Calibration: reference pixel = f(world). Image is 2000 x 1321 px. ----
-// The room is projected onto the reference image so, from the reference
-// viewpoint, every surface shows the exact pixels of the picture.
+// Reference picture is 2000 x 1321 px. Calibration maps world -> picture pixels.
 const IMG_W = 2000, IMG_H = 1321;
 const CAL = { kx: 94.2, bx: 1000, ky: 47.5, by: 365, kh: 128 };
 const DEPTH = 40;
-
 function toPx(x, y, z) {
   return [CAL.kx * (x - z) + CAL.bx, CAL.by + CAL.ky * (x + z) - CAL.kh * y];
 }
 
-const texture = new THREE.TextureLoader().load('./reference.jpg');
-texture.colorSpace = THREE.SRGBColorSpace;
-const calco = new THREE.MeshBasicMaterial({ map: texture });
+const img = new Image();
+img.src = './reference.jpg';
+img.onload = () => {
+  // Read the picture's pixels once: each 3D piece gets the colour it has in the picture.
+  const cv = document.createElement('canvas');
+  cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+  const cx = cv.getContext('2d', { willReadFrequently: true });
+  cx.drawImage(img, 0, 0);
+  const data = cx.getImageData(0, 0, cv.width, cv.height).data;
+  const sampleColor = (x, y, z) => {
+    const [px, py] = toPx(x, y, z);
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let dy = -4; dy <= 4; dy += 4) for (let dx = -4; dx <= 4; dx += 4) {
+      const sx = Math.min(cv.width - 1, Math.max(0, Math.round(px + dx)));
+      const sy = Math.min(cv.height - 1, Math.max(0, Math.round(py + dy)));
+      const k = (sy * cv.width + sx) * 4;
+      r += data[k]; g += data[k + 1]; b += data[k + 2]; n++;
+    }
+    return new THREE.Color().setRGB(r / n / 255, g / n / 255, b / n / 255, THREE.SRGBColorSpace);
+  };
+  build(sampleColor);
+};
 
-// Projection matrix that maps world -> reference pixels -> clip space.
-const P = new THREE.Matrix4().set(
-  2 * CAL.kx / IMG_W, 0, -2 * CAL.kx / IMG_W, 2 * CAL.bx / IMG_W - 1,
-  -2 * CAL.ky / IMG_H, 2 * CAL.kh / IMG_H, -2 * CAL.ky / IMG_H, 1 - 2 * CAL.by / IMG_H,
-  -1 / DEPTH, -1 / DEPTH, -1 / DEPTH, 0,
-  0, 0, 0, 1);
-const refCam = new THREE.Camera();
-refCam.projectionMatrix.copy(P);
-refCam.projectionMatrixInverse.copy(P).invert();
+function build(sampleColor) {
+  const texture = new THREE.Texture(img);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
+  const calcoMat = new THREE.MeshBasicMaterial({ map: texture });
 
-// Reference view: the picture itself, drawn full-frame.
-const picScene = new THREE.Scene();
-const picCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-const picMat = new THREE.MeshBasicMaterial({ map: texture, depthTest: false, depthWrite: false });
-picScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), picMat));
+  // Projection so the calco view reproduces the picture pixel for pixel.
+  const P = new THREE.Matrix4().set(
+    2 * CAL.kx / IMG_W, 0, -2 * CAL.kx / IMG_W, 2 * CAL.bx / IMG_W - 1,
+    -2 * CAL.ky / IMG_H, 2 * CAL.kh / IMG_H, -2 * CAL.ky / IMG_H, 1 - 2 * CAL.by / IMG_H,
+    -1 / DEPTH, -1 / DEPTH, -1 / DEPTH, 0,
+    0, 0, 0, 1);
+  const refCam = new THREE.Camera();
+  refCam.projectionMatrix.copy(P);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setClearColor(0xffffff, 1);
-renderer.setScissorTest(true);
-document.body.appendChild(renderer.domElement);
+  // Calco scene: the picture drawn full-frame.
+  const picScene = new THREE.Scene();
+  const picCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  picScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2),
+    new THREE.MeshBasicMaterial({ map: texture, depthTest: false, depthWrite: false })));
 
-const scene = new THREE.Scene();
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setScissorTest(true);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
+  document.body.appendChild(renderer.domElement);
 
-// Bake the mesh's transform into its geometry and set UVs from the reference
-// projection, so the picture lands on the surface where it appears in the image.
-function bake(mesh) {
-  mesh.updateMatrixWorld(true);
-  const g = mesh.geometry.clone().applyMatrix4(mesh.matrixWorld);
-  mesh.geometry = g;
-  mesh.position.set(0, 0, 0); mesh.rotation.set(0, 0, 0); mesh.scale.set(1, 1, 1);
-  mesh.updateMatrixWorld(true);
-  const pos = g.attributes.position;
-  const uv = new Float32Array(pos.count * 2);
-  for (let i = 0; i < pos.count; i++) {
-    const [px, py] = toPx(pos.getX(i), pos.getY(i), pos.getZ(i));
-    uv[i * 2] = px / IMG_W;
-    uv[i * 2 + 1] = 1 - py / IMG_H;
+  // 3D scene with lights.
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xf4f6f8);
+  scene.add(new THREE.HemisphereLight(0xe8f0ff, 0x4a5060, 2.6));
+  const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+  sun.position.set(-8, 16, 10);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14, near: 1, far: 60 });
+  sun.shadow.bias = -0.0008;
+  scene.add(sun);
+
+  const pieces = [];
+  // Bake the transform into geometry and set UVs from the reference projection.
+  function bake(mesh) {
+    mesh.updateMatrixWorld(true);
+    const g = mesh.geometry.clone().applyMatrix4(mesh.matrixWorld);
+    mesh.geometry = g;
+    mesh.position.set(0, 0, 0); mesh.rotation.set(0, 0, 0); mesh.updateMatrixWorld(true);
+    const pos = g.attributes.position;
+    const uv = new Float32Array(pos.count * 2);
+    for (let i = 0; i < pos.count; i++) {
+      const [px, py] = toPx(pos.getX(i), pos.getY(i), pos.getZ(i));
+      uv[i * 2] = px / IMG_W;
+      uv[i * 2 + 1] = 1 - py / IMG_H;
+    }
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    return mesh;
   }
-  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-  return mesh;
-}
-
-function add(geo, x, y, z, parent = scene) {
-  const m = new THREE.Mesh(geo, calco);
-  m.position.set(x, y, z);
-  parent.add(bake(m));
-  return m;
-}
-// Box with x, z at its centre and y at its bottom.
-function box(w, h, d, x, y, z, parent) {
-  return add(new THREE.BoxGeometry(w, h, d), x, y + h / 2, z, parent);
-}
-function cyl(r, h, x, y, z) {
-  return add(new THREE.CylinderGeometry(r, r, h, 16), x, y + h / 2, z);
-}
-
-// ---- Floor (tiles, stains) and walls -------------------------------------
-const W = 10, H = 3.2, T = 1.25;
-for (let i = 0; i < W / T; i++) for (let j = 0; j < W / T; j++) {
-  box(T - 0.04, 0.12, T - 0.04, (i + 0.5) * T, -0.12, (j + 0.5) * T);
-}
-[[1.5, 6.2, 1.2], [6.5, 9.0, 1.0], [4.2, 3.2, 1.6], [8.2, 4.7, 0.9]]
-  .forEach(([x, z, r]) => cyl(r, 0.02, x, 0.0, z));
-box(0.25, H, W, -0.125, 0, W / 2);  // wall A (left in the picture), x = 0
-box(W, H, 0.25, W / 2, 0, -0.125);  // wall B (right in the picture), z = 0
-
-// ---- Wall A: door, mirror, locker, picture ----------------------------------
-box(0.12, 3.2, 1.6, 0.0, 0, 8.4);
-box(0.1, 2.6, 1.2, 0.1, 0.1, 6.2);
-box(0.9, 2.5, 1.1, 0.1, 0, 4.0);
-box(0.08, 0.7, 0.9, 0.0, 2.0, 2.2);
-
-// ---- Wall B: bed, desk, computer, chair, window, radiator, boxes, stove, fridge
-box(3.3, 0.45, 2.0, 1.0, 0, 0.2);
-box(3.1, 0.35, 1.85, 1.1, 0.45, 0.25);
-box(0.9, 0.2, 1.1, 1.3, 0.8, 0.45);
-box(0.9, 0.9, 0.8, 4.4, 0, 0.45);
-box(2.6, 0.1, 1.1, 5.8, 1.45, 0.6);
-[[4.95, 0.05], [6.6, 0.05], [4.95, 1.05], [6.6, 1.05]].forEach(([x, z]) => box(0.12, 1.45, 0.12, x, 0, z));
-box(1.0, 0.9, 0.9, 5.4, 1.55, 0.35);
-box(0.82, 0.62, 0.05, 5.4, 1.75, 0.05);
-box(0.85, 0.08, 0.3, 5.5, 1.55, 1.0);
-box(0.7, 0.1, 0.7, 5.2, 0.85, 1.9);
-box(0.7, 1.1, 0.08, 5.2, 0.85, 1.6);
-box(2.0, 1.4, 0.06, 8.0, 1.5, 0.04);
-box(2.1, 0.08, 0.3, 8.0, 1.4, 0.12);
-for (let i = 0; i < 6; i++) box(0.1, 0.9, 0.22, 7.05 + i * 0.1, 0.1, 0.25);
-box(1.1, 0.9, 0.9, 8.9, 0, 0.7);
-box(1.0, 0.8, 0.8, 8.95, 0.9, 0.7);
-box(1.4, 1.0, 1.0, 8.6, 0, 2.6);
-box(1.3, 0.1, 0.9, 8.6, 1.0, 2.6);
-box(1.0, 2.5, 1.2, 9.1, 0, 0.8);
-
-// ---- Centre: rug, sofa, coffee table --------------------------------------
-add(new THREE.BoxGeometry(4.6, 0.03, 3.1), 4.2, 0.03, 6.0);
-box(2.6, 0.45, 1.1, 8.5, 0, 6.0);
-box(2.6, 0.9, 0.3, 8.5, 0.45, 5.45);
-box(0.25, 0.7, 1.4, 9.4, 0, 5.8);
-box(0.25, 0.7, 1.4, 7.6, 0, 5.8);
-box(1.2, 0.5, 0.7, 6.0, 0.3, 7.6);
-
-// ---- Views ---------------------------------------------------------------
-// Reference view: the calibrated projection, so the picture matches exactly.
-// Drag to orbit an ordinary isometric camera (the picture then stretches over
-// the geometry). Double-click returns to the reference view.
-let mode = 'ref', orbit = Math.PI / 4, dragX = null, moved = 0;
-const target = new THREE.Vector3(W / 2, 1.2, W / 2);
-const orbitCam = new THREE.OrthographicCamera(-8, 8, 8, -8, -100, 200);
-
-function fitOrbit() {
-  const a = innerWidth / innerHeight;
-  orbitCam.left = -8 * a; orbitCam.right = 8 * a;
-  orbitCam.top = 8; orbitCam.bottom = -8;
-  orbitCam.updateProjectionMatrix();
-}
-
-function placeOrbit() {
-  orbitCam.position.set(target.x + Math.cos(orbit) * 42, 30, target.z + Math.sin(orbit) * 42);
-  orbitCam.lookAt(target);
-}
-
-addEventListener('pointerdown', e => { dragX = e.clientX; moved = 0; });
-addEventListener('pointerup', () => { dragX = null; });
-addEventListener('pointermove', e => {
-  if (dragX === null) return;
-  const dx = e.clientX - dragX;
-  moved += Math.abs(dx);
-  if (moved > 4) { mode = 'orbit'; orbit += dx * 0.005; dragX = e.clientX; }
-});
-addEventListener('dblclick', () => { mode = 'ref'; });
-addEventListener('resize', () => { fitOrbit(); });
-fitOrbit();
-
-function frame() {
-  const cw = innerWidth, ch = innerHeight;
-  renderer.setSize(cw, ch);
-  renderer.setScissor(0, 0, cw, ch);
-  renderer.setViewport(0, 0, cw, ch);
-  if (mode === 'ref') {
-    // Letterbox the reference picture inside the window and show it exactly.
-    const s = Math.min(cw / IMG_W, ch / IMG_H);
-    const w = s * IMG_W, h = s * IMG_H;
-    const x0 = (cw - w) / 2, y0 = (ch - h) / 2;
-    renderer.setViewport(x0, y0, w, h);
-    renderer.setScissor(x0, y0, w, h);
-    renderer.setClearColor(0xffffff, 1);
-    renderer.render(picScene, picCam);
-  } else {
-    placeOrbit();
-    renderer.setClearColor(0xffffff, 1);
-    renderer.render(scene, orbitCam);
+  function add(geo, x, y, z, opts = {}) {
+    const m = new THREE.Mesh(geo, calcoMat);
+    m.position.set(x, y, z);
+    const pos = new THREE.Vector3(x, y, z);
+    bake(m);
+    m.castShadow = !opts.noShadow;
+    m.receiveShadow = true;
+    const col = sampleColor(pos.x, pos.y, pos.z);
+    m.userData.solid = new THREE.MeshStandardMaterial({ color: col, roughness: 0.85, metalness: 0 });
+    m.userData.calco = calcoMat;
+    scene.add(m);
+    pieces.push(m);
+    return m;
   }
-  requestAnimationFrame(frame);
+  // Box: x, z at centre, y at bottom.
+  const box = (w, h, d, x, y, z, o) => add(new THREE.BoxGeometry(w, h, d), x, y + h / 2, z, o);
+  const cyl = (r, h, x, y, z) => add(new THREE.CylinderGeometry(r, r, h, 16), x, y + h / 2, z, { noShadow: true });
+
+  // Floor, walls
+  const W = 10, H = 3.2, T = 1.25;
+  for (let i = 0; i < W / T; i++) for (let j = 0; j < W / T; j++) {
+    box(T - 0.04, 0.12, T - 0.04, (i + 0.5) * T, -0.12, (j + 0.5) * T, { noShadow: true });
+  }
+  [[1.5, 6.2, 1.2], [6.5, 9.0, 1.0], [4.2, 3.2, 1.6], [8.2, 4.7, 0.9]]
+    .forEach(([x, z, r]) => cyl(r, 0.02, x, 0.0, z));
+  box(0.25, H, W, -0.125, 0, W / 2, { noShadow: true });
+  box(W, H, 0.25, W / 2, 0, -0.125, { noShadow: true });
+
+  // Wall A: door, mirror, locker, picture
+  box(0.12, 3.2, 1.6, 0.0, 0, 8.4);
+  box(0.1, 2.6, 1.2, 0.1, 0.1, 6.2);
+  box(0.9, 2.5, 1.1, 0.1, 0, 4.0);
+  box(0.08, 0.7, 0.9, 0.0, 2.0, 2.2);
+
+  // Wall B: bed, nightstand, desk, computer, chair, window, radiator, boxes, stove, fridge
+  box(3.3, 0.45, 2.0, 1.0, 0, 0.2);
+  box(3.1, 0.35, 1.85, 1.1, 0.45, 0.25);
+  box(0.9, 0.2, 1.1, 1.3, 0.8, 0.45);
+  box(0.9, 0.9, 0.8, 4.4, 0, 0.45);
+  box(2.6, 0.1, 1.1, 5.8, 1.45, 0.6);
+  [[4.95, 0.05], [6.6, 0.05], [4.95, 1.05], [6.6, 1.05]].forEach(([x, z]) => box(0.12, 1.45, 0.12, x, 0, z));
+  box(1.0, 0.9, 0.9, 5.4, 1.55, 0.35);
+  box(0.82, 0.62, 0.05, 5.4, 1.75, 0.05);
+  box(0.85, 0.08, 0.3, 5.5, 1.55, 1.0);
+  box(0.7, 0.1, 0.7, 5.2, 0.85, 1.9);
+  box(0.7, 1.1, 0.08, 5.2, 0.85, 1.6);
+  box(2.0, 1.4, 0.06, 8.0, 1.5, 0.04);
+  box(2.1, 0.08, 0.3, 8.0, 1.4, 0.12);
+  for (let i = 0; i < 6; i++) box(0.1, 0.9, 0.22, 7.05 + i * 0.1, 0.1, 0.25);
+  box(1.1, 0.9, 0.9, 8.9, 0, 0.7);
+  box(1.0, 0.8, 0.8, 8.95, 0.9, 0.7);
+  box(1.4, 1.0, 1.0, 8.6, 0, 2.6);
+  box(1.3, 0.1, 0.9, 8.6, 1.0, 2.6);
+  box(1.0, 2.5, 1.2, 9.1, 0, 0.8);
+
+  // Centre: rug, sofa, coffee table
+  add(new THREE.BoxGeometry(4.6, 0.03, 3.1), 4.2, 0.03, 6.0, { noShadow: true });
+  box(2.6, 0.45, 1.1, 8.5, 0, 6.0);
+  box(2.6, 0.9, 0.3, 8.5, 0.45, 5.45);
+  box(0.25, 0.7, 1.4, 9.4, 0, 5.8);
+  box(0.25, 0.7, 1.4, 7.6, 0, 5.8);
+  box(1.2, 0.5, 0.7, 6.0, 0.3, 7.6);
+
+  // Views
+  const btnRef = document.getElementById('btn-ref');
+  const btn3d = document.getElementById('btn-3d');
+  const hint = document.getElementById('hint');
+  let mode = 'ref';
+  let orbit = Math.PI / 4, dragX = null, moved = 0;
+  const target = new THREE.Vector3(W / 2, 1.2, W / 2);
+  const orbitCam = new THREE.OrthographicCamera(-8, 8, 8, -8, -100, 200);
+
+  function setMode(m) {
+    mode = m;
+    const is3d = m === '3d';
+    pieces.forEach(p => { p.material = is3d ? p.userData.solid : p.userData.calco; });
+    btnRef.setAttribute('aria-pressed', String(!is3d));
+    btn3d.setAttribute('aria-pressed', String(is3d));
+    hint.textContent = is3d
+      ? '3D: arrastra para girar. Doble clic para volver al calco.'
+      : 'Calco: copia exacta de la imagen. Pulsa 3D para verla en volumen.';
+  }
+  btnRef.addEventListener('click', () => setMode('ref'));
+  btn3d.addEventListener('click', () => setMode('3d'));
+
+  addEventListener('pointerdown', e => { if (e.target.tagName !== 'BUTTON') { dragX = e.clientX; moved = 0; } });
+  addEventListener('pointerup', () => { dragX = null; });
+  addEventListener('pointermove', e => {
+    if (dragX === null || mode !== '3d') return;
+    const dx = e.clientX - dragX;
+    moved += Math.abs(dx);
+    orbit += dx * 0.005;
+    dragX = e.clientX;
+  });
+  addEventListener('dblclick', () => setMode('ref'));
+
+  function placeOrbit() {
+    const a = innerWidth / innerHeight;
+    orbitCam.left = -8 * a; orbitCam.right = 8 * a; orbitCam.top = 8; orbitCam.bottom = -8;
+    orbitCam.updateProjectionMatrix();
+    orbitCam.position.set(target.x + Math.cos(orbit) * 42, 30, target.z + Math.sin(orbit) * 42);
+    orbitCam.lookAt(target);
+  }
+
+  function frame() {
+    const cw = innerWidth, ch = innerHeight;
+    renderer.setSize(cw, ch);
+    renderer.setClearColor(0xffffff, 1);
+    if (mode === 'ref') {
+      const s = Math.min(cw / IMG_W, ch / IMG_H);
+      const w = s * IMG_W, h = s * IMG_H;
+      const x0 = (cw - w) / 2, y0 = (ch - h) / 2;
+      renderer.setViewport(x0, y0, w, h);
+      renderer.setScissor(x0, y0, w, h);
+      renderer.render(picScene, picCam);
+    } else {
+      renderer.setViewport(0, 0, cw, ch);
+      renderer.setScissor(0, 0, cw, ch);
+      placeOrbit();
+      renderer.render(scene, orbitCam);
+    }
+    requestAnimationFrame(frame);
+  }
+  setMode('ref');
+  frame();
+  window.__ready = true;
 }
-frame();
-window.__ready = true;
 </script>
