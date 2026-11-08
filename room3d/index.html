@@ -15,7 +15,7 @@
   <button id="btn-ref" aria-pressed="true">Calco</button>
   <button id="btn-3d" aria-pressed="false">3D</button>
 </div>
-<div id="hint">Calco: copia exacta de la imagen. 3D: arrastra para girar.</div>
+<div id="hint">Calco: copia exacta de la imagen. Pulsa 3D para verla en volumen.</div>
 <script type="module">
 import * as THREE from 'three';
 
@@ -29,32 +29,14 @@ function toPx(x, y, z) {
 
 const img = new Image();
 img.src = './reference.jpg';
-img.onload = () => {
-  // Read the picture's pixels once: each 3D piece gets the colour it has in the picture.
-  const cv = document.createElement('canvas');
-  cv.width = img.naturalWidth; cv.height = img.naturalHeight;
-  const cx = cv.getContext('2d', { willReadFrequently: true });
-  cx.drawImage(img, 0, 0);
-  const data = cx.getImageData(0, 0, cv.width, cv.height).data;
-  const sampleColor = (x, y, z) => {
-    const [px, py] = toPx(x, y, z);
-    let r = 0, g = 0, b = 0, n = 0;
-    for (let dy = -4; dy <= 4; dy += 4) for (let dx = -4; dx <= 4; dx += 4) {
-      const sx = Math.min(cv.width - 1, Math.max(0, Math.round(px + dx)));
-      const sy = Math.min(cv.height - 1, Math.max(0, Math.round(py + dy)));
-      const k = (sy * cv.width + sx) * 4;
-      r += data[k]; g += data[k + 1]; b += data[k + 2]; n++;
-    }
-    return new THREE.Color().setRGB(r / n / 255, g / n / 255, b / n / 255, THREE.SRGBColorSpace);
-  };
-  build(sampleColor);
-};
+img.onload = () => build();
 
-function build(sampleColor) {
+function build() {
   const texture = new THREE.Texture(img);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.needsUpdate = true;
   const calcoMat = new THREE.MeshBasicMaterial({ map: texture });
+  const solidMat = new THREE.MeshLambertMaterial({ map: texture });
 
   // Projection so the calco view reproduces the picture pixel for pixel.
   const P = new THREE.Matrix4().set(
@@ -65,7 +47,6 @@ function build(sampleColor) {
   const refCam = new THREE.Camera();
   refCam.projectionMatrix.copy(P);
 
-  // Calco scene: the picture drawn full-frame.
   const picScene = new THREE.Scene();
   const picCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
   picScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2),
@@ -78,7 +59,6 @@ function build(sampleColor) {
   renderer.shadowMap.type = THREE.PCFShadowMap;
   document.body.appendChild(renderer.domElement);
 
-  // 3D scene with lights.
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xf4f6f8);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x6a6e78, 1.5));
@@ -91,7 +71,7 @@ function build(sampleColor) {
   scene.add(sun);
 
   const pieces = [];
-  // Bake the transform into geometry and set UVs from the reference projection.
+  // Bake the transform into the geometry and set UVs from the reference projection.
   function bake(mesh) {
     mesh.updateMatrixWorld(true);
     const g = mesh.geometry.clone().applyMatrix4(mesh.matrixWorld);
@@ -107,77 +87,132 @@ function build(sampleColor) {
     g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
     return mesh;
   }
-  function add(geo, x, y, z, opts = {}) {
+  function add(geo, x, y, z, flat = false) {
     const m = new THREE.Mesh(geo, calcoMat);
     m.position.set(x, y, z);
-    const pos = new THREE.Vector3(x, y, z);
     bake(m);
-    m.castShadow = !opts.noShadow;
+    m.castShadow = !flat;
     m.receiveShadow = true;
-    // 3D material: the same reference picture, shaded by the light so each face reads as volume.
-    m.userData.solid = new THREE.MeshLambertMaterial({ map: texture });
+    m.userData.solid = solidMat;
     m.userData.calco = calcoMat;
     scene.add(m);
     pieces.push(m);
     return m;
   }
-  // Box: x, z at centre, y at bottom.
-  const box = (w, h, d, x, y, z, o) => add(new THREE.BoxGeometry(w, h, d), x, y + h / 2, z, o);
-  const cyl = (r, h, x, y, z) => add(new THREE.CylinderGeometry(r, r, h, 16), x, y + h / 2, z);
+  // Box: x, z at its centre, y at its bottom.
+  const box = (w, h, d, x, y, z, flat) => add(new THREE.BoxGeometry(w, h, d), x, y + h / 2, z, flat);
+  const cyl = (r, h, x, y, z, flat) => add(new THREE.CylinderGeometry(r, r, h, 20), x, y + h / 2, z, flat);
 
-  // Floor, walls
   const W = 10, H = 3.2, T = 1.25;
+
+  // ---- Floor and walls ----
   for (let i = 0; i < W / T; i++) for (let j = 0; j < W / T; j++) {
-    box(T - 0.04, 0.12, T - 0.04, (i + 0.5) * T, -0.12, (j + 0.5) * T, { noShadow: true });
+    box(T - 0.04, 0.12, T - 0.04, (i + 0.5) * T, -0.12, (j + 0.5) * T, true);
   }
   [[1.5, 6.2, 1.2], [6.5, 9.0, 1.0], [4.2, 3.2, 1.6], [8.2, 4.7, 0.9]]
-    .forEach(([x, z, r]) => cyl(r, 0.02, x, 0.0, z));
-  box(0.25, H, W, -0.125, 0, W / 2, { noShadow: true });
-  box(W, H, 0.25, W / 2, 0, -0.125, { noShadow: true });
+    .forEach(([x, z, r]) => cyl(r, 0.02, x, 0.0, z, true));
+  box(0.25, H, W, -0.125, 0, W / 2, true);   // wall A (left in the picture)
+  box(W, H, 0.25, W / 2, 0, -0.125, true);   // wall B (right in the picture)
+  box(0.08, 0.3, W, 0.04, 0, W / 2, true);   // skirting along wall A
+  box(W, 0.3, 0.08, W / 2, 0, 0.04, true);   // skirting along wall B
 
-  // Wall A: door, mirror, locker, picture
-  box(0.22, 3.1, 1.6, 0.06, 0, 8.4);
-  box(0.3, 2.6, 1.3, 0.12, 0.1, 6.2);
-  box(1.0, 2.5, 1.2, 0.2, 0, 4.0);
-  box(0.3, 0.8, 1.0, 0.1, 1.9, 2.2);
-  box(0.4, 0.2, 1.1, 0.12, 2.8, 2.2);
+  // ---- Wall A (x = 0): door, mirror, locker, picture ----
+  // Door: frame, leaf, two raised panels, handle.
+  box(0.1, 3.2, 0.12, 0.05, 0, 7.6);
+  box(0.1, 3.2, 0.12, 0.05, 0, 9.2);
+  box(0.1, 0.12, 1.7, 0.05, 3.08, 8.4);
+  box(0.16, 3.05, 1.5, 0.08, 0.05, 8.4);
+  box(0.06, 1.1, 1.0, 0.18, 1.8, 8.4);
+  box(0.06, 1.1, 1.0, 0.18, 0.35, 8.4);
+  box(0.14, 0.12, 0.3, 0.2, 1.4, 8.1);
+  // Mirror: wooden frame with a raised glass.
+  box(0.14, 2.6, 1.3, 0.1, 0.1, 6.2);
+  box(0.06, 2.3, 1.0, 0.2, 0.25, 6.2);
+  // Locker: body, raised door, vent slots, handle.
+  box(1.0, 2.5, 1.2, 0.5, 0, 4.0);
+  box(0.08, 2.3, 1.0, 1.04, 0.1, 4.0);
+  for (let i = 0; i < 3; i++) box(0.1, 0.1, 0.6, 1.08, 1.9 + i * 0.22, 4.0);
+  box(0.12, 0.3, 0.06, 1.12, 1.2, 4.5);
+  // Picture: frame with a raised mat.
+  box(0.12, 0.9, 1.1, 0.06, 1.8, 2.2);
+  box(0.06, 0.7, 0.9, 0.16, 1.9, 2.2);
 
-  // Wall B: bed, nightstand, desk, computer, chair, window, radiator, boxes, stove, fridge
-  box(3.3, 0.7, 2.0, 1.0, 0, 0.2);
-  box(3.1, 0.6, 1.85, 1.1, 0.7, 0.25);
-  box(0.9, 0.3, 1.1, 1.3, 1.3, 0.45);
+  // ---- Wall B (z = 0): bed, nightstand, desk, computer, chair, window, radiator, boxes, stove, fridge ----
+  // Bed: pallet base with a headboard, mattress, pillow, blanket.
+  box(3.3, 0.45, 2.0, 1.0, 0, 0.2);
+  box(3.3, 1.1, 0.14, 1.0, 0, 0.07);
+  box(3.0, 0.3, 1.9, 1.1, 0.45, 0.25);
+  box(2.9, 0.2, 1.85, 1.1, 0.7, 0.25);
+  box(0.8, 0.2, 1.3, 1.25, 0.9, 0.3);
+  box(0.9, 0.2, 0.6, 1.3, 0.75, 0.7);
+  // Nightstand: body with two drawer fronts.
   box(0.9, 0.9, 0.8, 4.4, 0, 0.45);
+  box(0.7, 0.3, 0.06, 4.4, 0.5, 0.88);
+  box(0.7, 0.3, 0.06, 4.4, 0.12, 0.88);
+  // Desk: top with front lip and four legs.
   box(2.6, 0.14, 1.1, 5.8, 1.45, 0.6);
+  box(2.6, 0.14, 0.05, 5.8, 1.33, 1.13);
   [[4.95, 0.05], [6.6, 0.05], [4.95, 1.05], [6.6, 1.05]].forEach(([x, z]) => box(0.12, 1.45, 0.12, x, 0, z));
-  box(1.0, 0.9, 0.9, 5.4, 1.55, 0.35);
-  box(0.82, 0.62, 0.2, 5.4, 1.75, 0.05);
-  box(0.85, 0.14, 0.3, 5.5, 1.55, 1.0);
+  // Computer: CRT body with rear hump, screen, base, keyboard, mouse.
+  box(0.4, 0.08, 0.3, 5.4, 1.59, 0.35);
+  box(1.0, 0.8, 0.8, 5.4, 1.67, 0.35);
+  box(0.6, 0.4, 0.5, 5.4, 1.67, -0.05);
+  box(0.82, 0.62, 0.05, 5.4, 1.8, 0.8);
+  box(0.85, 0.05, 0.3, 5.5, 1.59, 1.05);
+  box(0.12, 0.05, 0.18, 6.1, 1.59, 1.05);
+  // Chair: seat, four legs, backrest.
   box(0.7, 0.2, 0.7, 5.2, 0.85, 1.9);
-  box(0.7, 1.1, 0.08, 5.2, 0.85, 1.6);
-  box(2.0, 1.4, 0.2, 8.0, 1.5, 0.1);
+  box(0.7, 0.9, 0.1, 5.2, 1.05, 1.58);
+  [[4.9, 1.6], [5.5, 1.6], [4.9, 2.2], [5.5, 2.2]].forEach(([x, z]) => box(0.08, 0.85, 0.08, x, 0, z));
+  // Window: frame, mullion, raised sill, recessed glass.
+  box(2.0, 0.08, 0.2, 8.0, 2.9, 0.1);
+  box(2.0, 0.08, 0.2, 8.0, 1.5, 0.1);
+  box(0.08, 1.4, 0.2, 7.0, 1.5, 0.1);
+  box(0.08, 1.4, 0.2, 9.0, 1.5, 0.1);
+  box(0.06, 1.4, 0.1, 8.0, 1.5, 0.14);
+  box(1.9, 1.3, 0.04, 8.0, 1.55, 0.05);
   box(2.1, 0.08, 0.3, 8.0, 1.4, 0.12);
+  // Radiator: six fins on a bracket.
   for (let i = 0; i < 6; i++) box(0.14, 0.9, 0.3, 7.05 + i * 0.12, 0.1, 0.3);
+  // Cardboard boxes, stacked, with a tape strip on the top one.
   box(1.1, 0.9, 0.9, 8.9, 0, 0.7);
   box(1.0, 0.8, 0.8, 8.95, 0.9, 0.7);
+  box(0.2, 0.82, 0.82, 8.95, 0.9, 0.7);
+  // Stove: cabinet with two doors and handles, hob with two rings.
   box(1.4, 1.0, 1.0, 8.6, 0, 2.6);
+  box(0.6, 0.8, 0.06, 8.25, 0.08, 3.13);
+  box(0.6, 0.8, 0.06, 8.95, 0.08, 3.13);
+  box(0.05, 0.3, 0.06, 8.5, 0.45, 3.22);
+  box(0.05, 0.3, 0.06, 8.7, 0.45, 3.22);
   box(1.3, 0.1, 0.9, 8.6, 1.0, 2.6);
+  cyl(0.25, 0.06, 8.25, 1.1, 2.25);
+  cyl(0.25, 0.06, 8.95, 1.1, 2.95);
+  // Fridge: body, upper door, lower door, handles.
   box(1.0, 2.5, 1.2, 9.1, 0, 0.8);
+  box(0.08, 1.5, 1.1, 9.6, 0.95, 0.8);
+  box(0.08, 0.85, 1.1, 9.6, 0.05, 0.8);
+  box(0.08, 0.5, 0.06, 9.7, 1.6, 0.3);
+  box(0.08, 0.4, 0.06, 9.7, 0.7, 0.3);
 
-  // Centre: rug, sofa, coffee table
-  add(new THREE.BoxGeometry(4.6, 0.12, 3.1), 4.2, 0.06, 6.0);
+  // ---- Centre: rug, sofa, coffee table ----
+  box(4.6, 0.12, 3.1, 4.2, 0.0, 6.0, true);
+  // Sofa: base, back, arms, seat cushion, back cushion.
   box(2.6, 0.6, 1.4, 8.5, 0, 6.0);
   box(2.6, 1.2, 0.4, 8.5, 0.6, 5.5);
   box(0.4, 0.9, 1.4, 9.3, 0, 5.8);
   box(0.4, 0.9, 1.4, 7.7, 0, 5.8);
+  box(1.2, 0.2, 1.0, 8.5, 0.6, 6.15);
+  box(1.2, 0.7, 0.25, 8.5, 0.8, 5.75);
+  // Coffee table: top and four legs.
   box(1.2, 0.14, 0.7, 6.0, 0.6, 7.6);
   [[5.5, 7.3], [6.5, 7.3], [5.5, 7.9], [6.5, 7.9]].forEach(([x, z]) => box(0.08, 0.6, 0.08, x, 0, z));
 
-  // Views
+  // ---- Views ----
   const btnRef = document.getElementById('btn-ref');
   const btn3d = document.getElementById('btn-3d');
   const hint = document.getElementById('hint');
   let mode = 'ref';
-  let orbit = Math.PI / 4, dragX = null, moved = 0;
+  let orbit = Math.PI / 4, dragX = null;
   const target = new THREE.Vector3(W / 2, 1.2, W / 2);
   const orbitCam = new THREE.OrthographicCamera(-8, 8, 8, -8, -100, 200);
 
@@ -194,13 +229,11 @@ function build(sampleColor) {
   btnRef.addEventListener('click', () => setMode('ref'));
   btn3d.addEventListener('click', () => setMode('3d'));
 
-  addEventListener('pointerdown', e => { if (e.target.tagName !== 'BUTTON') { dragX = e.clientX; moved = 0; } });
+  addEventListener('pointerdown', e => { if (e.target.tagName !== 'BUTTON') dragX = e.clientX; });
   addEventListener('pointerup', () => { dragX = null; });
   addEventListener('pointermove', e => {
     if (dragX === null || mode !== '3d') return;
-    const dx = e.clientX - dragX;
-    moved += Math.abs(dx);
-    orbit += dx * 0.005;
+    orbit += (e.clientX - dragX) * 0.005;
     dragX = e.clientX;
   });
   addEventListener('dblclick', () => setMode('ref'));
