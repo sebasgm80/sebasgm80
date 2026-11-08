@@ -31,7 +31,7 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xffffff);
 
 // Orthographic isometric camera looking at the room from the front corner.
-const frustum = 7.4;
+const frustum = 6.2;
 const camera = new THREE.OrthographicCamera(-frustum, frustum, frustum, -frustum, -100, 200);
 camera.position.set(30, 30, 30);
 camera.lookAt(W / 2, 1.2, W / 2);
@@ -194,7 +194,7 @@ addEventListener('pointerup', () => drag = null);
 addEventListener('pointermove', e => { if (drag !== null) { orbit += (e.clientX - drag) * 0.005; drag = e.clientX; } });
 
 const params = new URLSearchParams(location.search);
-const fixed = params.has('fixed');
+const fixed = true; // starts on the reference view; drag to orbit
 if (fixed) orbit = 0;
 
 function placeCamera() {
